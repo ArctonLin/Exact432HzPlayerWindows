@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="Exact432Hz Player" Height="650" Width="1050"
         Background="#121212" Foreground="#E0E0E0"
+        Icon="Exact432Hz.png"
         FontFamily="Segoe UI, Segoe UI Emoji, sans-serif">
     
     <Window.Resources>

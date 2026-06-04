@@ -16,4 +16,8 @@
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Exact432Hz.png" />
+  </ItemGroup>
+
 </Project>
