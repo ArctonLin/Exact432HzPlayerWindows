@@ -112,8 +112,28 @@
 
         <!-- Menu Style -->
         <Style TargetType="Menu">
-            <Setter Property="Background" Value="{StaticResource BgDark}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <!-- Top-level MenuItem Style (applies to File, Tools) -->
+        <Style TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Menu Separator Style -->
+        <Style TargetType="Separator">
+            <Setter Property="Background" Value="{StaticResource BorderDark}"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Separator">
+                        <Border Height="1" Background="{TemplateBinding Background}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Minimal MenuItem Style for Dropdowns (removes icon column) -->
@@ -182,17 +202,28 @@
     </Window.Resources>
     
     <DockPanel>
-        <!-- Menu Bar -->
-        <Menu DockPanel.Dock="Top" Padding="5">
-            <MenuItem Header="_File">
-                <MenuItem Header="Set Parent _Folder" Command="{Binding SetParentFolderCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
-                <Separator Background="{StaticResource BorderDark}" />
-                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
-            </MenuItem>
-            <MenuItem Header="_Tools">
-                <MenuItem Header="Clear Base Frequency _Cache" Command="{Binding ClearCacheCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
-            </MenuItem>
-        </Menu>
+        <!-- Menu Bar Replacement (Uses Buttons and perfectly styled ContextMenus) -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5" Background="Transparent">
+            <!-- File Menu Button -->
+            <Button Content="File" Background="Transparent" BorderThickness="0" Padding="15,5" Margin="0,0,5,0" Click="MenuButton_Click">
+                <Button.ContextMenu>
+                    <ContextMenu Background="{StaticResource BgPanel}" Foreground="{StaticResource TextPrimary}">
+                        <MenuItem Header="Set Parent Folder" Command="{Binding SetParentFolderCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
+                        <Separator Background="{StaticResource BorderDark}" Margin="0,4"/>
+                        <MenuItem Header="Exit" Command="{Binding ExitCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+            
+            <!-- Tools Menu Button -->
+            <Button Content="Tools" Background="Transparent" BorderThickness="0" Padding="15,5" Click="MenuButton_Click">
+                <Button.ContextMenu>
+                    <ContextMenu Background="{StaticResource BgPanel}" Foreground="{StaticResource TextPrimary}">
+                        <MenuItem Header="Clear Base Frequency Cache" Command="{Binding ClearCacheCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+        </StackPanel>
 
         <!-- Playback Controls and Progress -->
         <Border DockPanel.Dock="Top" Padding="15" Background="{StaticResource BgPanel}" BorderBrush="{StaticResource BorderDark}" BorderThickness="0,1,0,1">
@@ -265,9 +296,9 @@
                             <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TreeView}}" />
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
-                                    <ContextMenu Background="{StaticResource BgDark}" Foreground="{StaticResource TextPrimary}" ItemContainerStyle="{StaticResource SimpleMenuItemStyle}">
-                                        <MenuItem Header="Play" Command="{Binding PlacementTarget.Tag.PlayFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
-                                        <MenuItem Header="Shuffle Play" Command="{Binding PlacementTarget.Tag.ShufflePlayFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+                                    <ContextMenu Background="{StaticResource BgDark}" Foreground="{StaticResource TextPrimary}">
+                                        <MenuItem Header="Play" Command="{Binding PlacementTarget.Tag.PlayFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Style="{StaticResource SimpleMenuItemStyle}" />
+                                        <MenuItem Header="Shuffle Play" Command="{Binding PlacementTarget.Tag.ShufflePlayFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Style="{StaticResource SimpleMenuItemStyle}" />
                                     </ContextMenu>
                                 </Setter.Value>
                             </Setter>
@@ -324,9 +355,9 @@
                             <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
-                                    <ContextMenu Background="{StaticResource BgDark}" Foreground="{StaticResource TextPrimary}" ItemContainerStyle="{StaticResource SimpleMenuItemStyle}">
-                                        <MenuItem Header="Play" Command="{Binding PlacementTarget.Tag.PlayPlaylistItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
-                                        <MenuItem Header="Detail" Command="{Binding PlacementTarget.Tag.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+                                    <ContextMenu Background="{StaticResource BgDark}" Foreground="{StaticResource TextPrimary}">
+                                        <MenuItem Header="Play" Command="{Binding PlacementTarget.Tag.PlayPlaylistItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Style="{StaticResource SimpleMenuItemStyle}" />
+                                        <MenuItem Header="Detail" Command="{Binding PlacementTarget.Tag.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Style="{StaticResource SimpleMenuItemStyle}" />
                                     </ContextMenu>
                                 </Setter.Value>
                             </Setter>
