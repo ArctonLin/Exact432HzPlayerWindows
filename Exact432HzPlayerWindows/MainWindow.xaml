@@ -1,0 +1,352 @@
+<Window x:Class="Exact432HzPlayerWindows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Exact432HzPlayerWindows"
+        mc:Ignorable="d"
+        Title="Exact432Hz Player" Height="650" Width="1050"
+        Background="#121212" Foreground="#E0E0E0"
+        FontFamily="Segoe UI, Segoe UI Emoji, sans-serif">
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        
+        <!-- Colors -->
+        <SolidColorBrush x:Key="BgDark" Color="#121212" />
+        <SolidColorBrush x:Key="BgPanel" Color="#1E1E1E" />
+        <SolidColorBrush x:Key="BgHover" Color="#2D2D30" />
+        <SolidColorBrush x:Key="BgSelected" Color="#3F3F46" />
+        <SolidColorBrush x:Key="BorderDark" Color="#333333" />
+        <SolidColorBrush x:Key="TextPrimary" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="TextSecondary" Color="#9E9E9E" />
+        <SolidColorBrush x:Key="AccentColor" Color="#00A8E8" />
+        
+        <!-- System Colors Override for TreeView/ListBox Selection -->
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#3F3F46" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#2D2D30" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#E0E0E0" />
+        
+        <!-- System Colors Override for ContextMenu and Sliders -->
+        <SolidColorBrush x:Key="{x:Static SystemColors.MenuBrushKey}" Color="#1E1E1E" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.MenuTextBrushKey}" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.MenuBarBrushKey}" Color="#121212" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#333333" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlLightBrushKey}" Color="#3F3F46" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlLightLightBrushKey}" Color="#4A4A52" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlDarkBrushKey}" Color="#2D2D30" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlDarkDarkBrushKey}" Color="#1E1E1E" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#121212" />
+
+        <!-- ScrollBar Style (Modern Dark/Minimalist) -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track" IsDirectionReversed="true">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0"/>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#4A4A52" CornerRadius="3" Margin="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDark}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource BgHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource BgSelected}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.3"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Menu Style -->
+        <Style TargetType="Menu">
+            <Setter Property="Background" Value="{StaticResource BgDark}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <!-- Minimal MenuItem Style for Dropdowns (removes icon column) -->
+        <Style x:Key="SimpleMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderThickness="0" CornerRadius="2" Margin="2">
+                            <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource BgSelected}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ContextMenu Style (Removes default white gutter) -->
+        <Style TargetType="ContextMenu">
+            <Setter Property="Background" Value="{StaticResource BgPanel}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDark}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4" Padding="2">
+                            <ScrollViewer>
+                                <ItemsPresenter/>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TreeView">
+            <Setter Property="Background" Value="{StaticResource BgPanel}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDark}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="{StaticResource BgPanel}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderDark}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="IsMoveToPointEnabled" Value="True"/>
+        </Style>
+    </Window.Resources>
+    
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top" Padding="5">
+            <MenuItem Header="_File">
+                <MenuItem Header="Set Parent _Folder" Command="{Binding SetParentFolderCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
+                <Separator Background="{StaticResource BorderDark}" />
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="Clear Base Frequency _Cache" Command="{Binding ClearCacheCommand}" Style="{StaticResource SimpleMenuItemStyle}" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Playback Controls and Progress -->
+        <Border DockPanel.Dock="Top" Padding="15" Background="{StaticResource BgPanel}" BorderBrush="{StaticResource BorderDark}" BorderThickness="0,1,0,1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Controls -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                    <Button Content="&#x23EE;" ToolTip="Previous" Command="{Binding PreviousCommand}" Width="45" Height="40" FontSize="18" Margin="5" FontFamily="Segoe UI Emoji" />
+                    <Button Content="&#x23EF;" ToolTip="Play / Pause" Command="{Binding PlayPauseCommand}" Width="55" Height="40" FontSize="20" Margin="5" Foreground="{StaticResource AccentColor}" BorderBrush="{StaticResource AccentColor}" FontFamily="Segoe UI Emoji" />
+                    <Button Content="&#x23F9;" ToolTip="Stop" Command="{Binding StopCommand}" Width="45" Height="40" FontSize="18" Margin="5" FontFamily="Segoe UI Emoji" />
+                    <Button Content="&#x23ED;" ToolTip="Next" Command="{Binding NextCommand}" Width="45" Height="40" FontSize="18" Margin="5" FontFamily="Segoe UI Emoji" />
+                    
+                    <Border Width="1" Background="{StaticResource BorderDark}" Margin="10,5" />
+                    
+                    <Button Content="🔀 Re-Shuffle" Command="{Binding ReShuffleCommand}" Width="100" Height="40" Margin="5" FontFamily="Segoe UI Emoji"/>
+                    <Button Content="🔁 Un-Shuffle" Command="{Binding UnShuffleCommand}" Width="100" Height="40" Margin="5" FontFamily="Segoe UI Emoji"/>
+                </StackPanel>
+                
+                <!-- Volume Control -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,15">
+                    <TextBlock Text="🔊" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource TextSecondary}" FontFamily="Segoe UI Emoji" />
+                    <Slider Minimum="0" Maximum="1" Value="{Binding Volume}" Width="120" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Progress -->
+                <Grid Grid.Row="1" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding CurrentTimeDisplay}" VerticalAlignment="Center" Margin="10,0" Foreground="{StaticResource TextSecondary}"/>
+                    <Slider Grid.Column="1" VerticalAlignment="Center" 
+                            Minimum="0" Maximum="{Binding TotalDurationSeconds}" 
+                            Value="{Binding CurrentPositionSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                            Thumb.DragStarted="Slider_DragStarted"
+                            Thumb.DragCompleted="Slider_DragCompleted"
+                            PreviewMouseLeftButtonUp="Slider_PreviewMouseLeftButtonUp" />
+                    <TextBlock Grid.Column="2" Text="{Binding TotalTimeDisplay}" VerticalAlignment="Center" Margin="10,0" Foreground="{StaticResource TextSecondary}"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Main Content (Tree View and Playlist) -->
+        <Grid Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="7*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Tree View -->
+            <Grid Grid.Column="0">
+                <TreeView ItemsSource="{Binding RootNodes}" 
+                          SelectedItemChanged="TreeView_SelectedItemChanged"
+                          MouseDoubleClick="TreeView_MouseDoubleClick"
+                          Padding="5">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True" />
+                            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TreeView}}" />
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu Background="{StaticResource BgDark}" Foreground="{StaticResource TextPrimary}" ItemContainerStyle="{StaticResource SimpleMenuItemStyle}">
+                                        <MenuItem Header="Play" Command="{Binding PlacementTarget.Tag.PlayFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+                                        <MenuItem Header="Shuffle Play" Command="{Binding PlacementTarget.Tag.ShufflePlayFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+                                    </ContextMenu>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                <TextBlock Text="📁" Margin="0,0,5,0" Foreground="{StaticResource TextSecondary}" FontFamily="Segoe UI Emoji" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{StaticResource TextPrimary}" />
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+                
+                <!-- Overlay Button when Tree is Empty -->
+                <Button Content="Set Parent Folder" 
+                        Command="{Binding SetParentFolderCommand}" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center"
+                        Padding="30,15" FontSize="16"
+                        Visibility="{Binding IsTreeViewEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </Grid>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent" />
+
+            <!-- Right Panel: Playlist -->
+            <Grid Grid.Column="2" Margin="10,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <!-- Now Playing Label -->
+                <Border Background="{StaticResource BgPanel}" BorderBrush="{StaticResource BorderDark}" BorderThickness="1" CornerRadius="4" Padding="15,10" Margin="0,0,0,10">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <TextBlock Text="🎵 " Foreground="{StaticResource AccentColor}" FontFamily="Segoe UI Emoji" />
+                            <TextBlock Text="{Binding NowPlayingText}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding CurrentBaseFrequency}" FontWeight="Bold" Foreground="{StaticResource AccentColor}" HorizontalAlignment="Right" />
+                    </Grid>
+                </Border>
+                
+                <!-- Playlist ListBox -->
+                <ListBox Grid.Row="1" ItemsSource="{Binding Playlist}" SelectedItem="{Binding SelectedPlaylistItem}"
+                         MouseDoubleClick="Playlist_MouseDoubleClick" Padding="5">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="5,8" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderDark}" />
+                            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu Background="{StaticResource BgDark}" Foreground="{StaticResource TextPrimary}" ItemContainerStyle="{StaticResource SimpleMenuItemStyle}">
+                                        <MenuItem Header="Play" Command="{Binding PlacementTarget.Tag.PlayPlaylistItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+                                        <MenuItem Header="Detail" Command="{Binding PlacementTarget.Tag.ShowDetailCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" />
+                                    </ContextMenu>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding IndexStr}" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding DurationStr}" Foreground="{StaticResource AccentColor}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{Binding FileName}" FontSize="14" VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
