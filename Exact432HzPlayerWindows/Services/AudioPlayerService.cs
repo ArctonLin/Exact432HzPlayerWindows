@@ -11,6 +11,8 @@ namespace Exact432HzPlayerWindows.Services
         public event EventHandler? PlaybackEnded;
 
         private double _volume = 1.0;
+        private double _currentVolumeMultiplier = 1.0;
+
         public double Volume
         {
             get => _volume;
@@ -19,7 +21,7 @@ namespace Exact432HzPlayerWindows.Services
                 _volume = value;
                 if (_stream != 0)
                 {
-                    Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume);
+                    Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume * _currentVolumeMultiplier);
                 }
             }
         }
@@ -89,7 +91,7 @@ namespace Exact432HzPlayerWindows.Services
             }
         }
 
-        public void Play(string filePath, double maxFreq)
+        public void Play(string filePath, double maxFreq, double volumeMultiplier = 1.0)
         {
             Stop();
 
@@ -100,12 +102,14 @@ namespace Exact432HzPlayerWindows.Services
             
             if (_stream != 0)
             {
+                _currentVolumeMultiplier = volumeMultiplier;
+
                 // Ratio calculation for pitch shift without tempo change
                 double ratio = 432.0 / maxFreq;
                 double semitones = 12.0 * Math.Log(ratio, 2);
 
                 Bass.ChannelSetAttribute(_stream, (ChannelAttribute)65537, semitones); // BASS_ATTRIB_TEMPO_PITCH
-                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume);
+                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume * _currentVolumeMultiplier);
                 
                 // Keep a reference to the delegate so the GC doesn't collect it
                 _endSync = new SyncProcedure((handle, channel, data, user) => 

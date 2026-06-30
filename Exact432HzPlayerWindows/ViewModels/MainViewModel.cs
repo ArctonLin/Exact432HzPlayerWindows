@@ -239,7 +239,7 @@ namespace Exact432HzPlayerWindows.ViewModels
 
         private void ExecuteClearCache()
         {
-            var result = System.Windows.MessageBox.Show("Are you sure you want to delete the Base Frequency Cache?", "Clear Cache", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = System.Windows.MessageBox.Show("Are you sure you want to delete the Base Frequency and Volume Caches?", "Clear Cache", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes)
             {
                 AudioAnalyzer.ClearCache();
@@ -330,8 +330,12 @@ namespace Exact432HzPlayerWindows.ViewModels
         {
             NowPlayingText = $"Analyzing: {item.FileName}...";
             double maxFreq = await AudioAnalyzer.AnalyzeToneAsync(item.FullPath);
+            double peakVolume = await AudioAnalyzer.AnalyzePeakVolumeAsync(item.FullPath);
             
-            _playerService.Play(item.FullPath, maxFreq);
+            // Calculate multiplier for peak normalization to 99% (cap at 10.0 to prevent extreme noise)
+            double volumeMultiplier = Math.Min(0.99 / Math.Max(peakVolume, 0.01), 10.0);
+            
+            _playerService.Play(item.FullPath, maxFreq, volumeMultiplier);
             _isPlaying = true;
             TotalDurationSeconds = _playerService.GetTotalSeconds();
             NowPlayingText = $"Now Playing: {item.FileName}";
@@ -343,6 +347,7 @@ namespace Exact432HzPlayerWindows.ViewModels
             {
                 var nextItem = Playlist[index + 1];
                 _ = AudioAnalyzer.AnalyzeToneAsync(nextItem.FullPath);
+                _ = AudioAnalyzer.AnalyzePeakVolumeAsync(nextItem.FullPath);
             }
         }
 

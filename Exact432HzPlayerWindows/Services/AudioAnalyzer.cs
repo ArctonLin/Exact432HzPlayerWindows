@@ -50,12 +50,52 @@ namespace Exact432HzPlayerWindows.Services
             catch { }
         }
 
+        private static string GetVolumeCacheFilePath()
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var folder = Path.Combine(appData, "Exact432HzPlayerWindows");
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, "volume_cache.json");
+        }
+
+        private static Dictionary<string, double> LoadVolumeCache()
+        {
+            var path = GetVolumeCacheFilePath();
+            if (File.Exists(path))
+            {
+                try
+                {
+                    var json = File.ReadAllText(path);
+                    return JsonSerializer.Deserialize<Dictionary<string, double>>(json) ?? new Dictionary<string, double>();
+                }
+                catch { }
+            }
+            return new Dictionary<string, double>();
+        }
+
+        private static void SaveVolumeCache(Dictionary<string, double> cache)
+        {
+            try
+            {
+                var path = GetVolumeCacheFilePath();
+                var json = JsonSerializer.Serialize(cache);
+                File.WriteAllText(path, json);
+            }
+            catch { }
+        }
+
         public static void ClearCache()
         {
             var path = GetCacheFilePath();
             if (File.Exists(path))
             {
                 File.Delete(path);
+            }
+            
+            var volPath = GetVolumeCacheFilePath();
+            if (File.Exists(volPath))
+            {
+                File.Delete(volPath);
             }
         }
 
@@ -136,6 +176,50 @@ namespace Exact432HzPlayerWindows.Services
             cache[filePath] = maxFreq;
             SaveCache(cache);
             return maxFreq;
+        }
+        public static async Task<double> AnalyzePeakVolumeAsync(string filePath)
+        {
+            var cache = LoadVolumeCache();
+            if (cache.ContainsKey(filePath))
+            {
+                return cache[filePath];
+            }
+
+            double peakVolume = await Task.Run(() =>
+            {
+                int decodeHandle = Bass.CreateStream(filePath, 0, 0, BassFlags.Decode | BassFlags.Float);
+                if (decodeHandle == 0) return 1.0; // Default if fail
+
+                float maxPeak = 0f;
+                int bufferSize = 40960; // 40KB chunks
+                float[] buffer = new float[bufferSize / 4];
+
+                while (Bass.ChannelIsActive(decodeHandle) == PlaybackState.Playing)
+                {
+                    int bytesRead = Bass.ChannelGetData(decodeHandle, buffer, bufferSize);
+                    if (bytesRead <= 0) break;
+
+                    int samplesRead = bytesRead / 4;
+                    for (int i = 0; i < samplesRead; i++)
+                    {
+                        float absVal = Math.Abs(buffer[i]);
+                        if (absVal > maxPeak)
+                        {
+                            maxPeak = absVal;
+                        }
+                    }
+                }
+
+                Bass.StreamFree(decodeHandle);
+                return (double)maxPeak;
+            });
+
+            // Prevent zero or extremely small values to avoid division by zero or extreme boosts
+            if (peakVolume < 0.001) peakVolume = 1.0; 
+            
+            cache[filePath] = peakVolume;
+            SaveVolumeCache(cache);
+            return peakVolume;
         }
     }
 }
