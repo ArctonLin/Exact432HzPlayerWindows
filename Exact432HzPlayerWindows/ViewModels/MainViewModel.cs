@@ -218,6 +218,7 @@ namespace Exact432HzPlayerWindows.ViewModels
         {
             if (_isPlaying && !_isDraggingSlider)
             {
+                _playerService.EnsureDeviceHealth();
                 CurrentPositionSeconds = _playerService.GetPositionSeconds();
             }
         }

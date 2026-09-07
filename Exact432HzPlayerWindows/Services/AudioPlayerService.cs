@@ -91,12 +91,28 @@ namespace Exact432HzPlayerWindows.Services
             }
         }
 
+        private string? _lastFilePath;
+        private double _lastMaxFreq;
+        private double _lastVolumeMultiplier;
+
         public void Play(string filePath, double maxFreq, double volumeMultiplier = 1.0)
         {
+            _lastFilePath = filePath;
+            _lastMaxFreq = maxFreq;
+            _lastVolumeMultiplier = volumeMultiplier;
+
             Stop();
 
             int decodeStream = Bass.CreateStream(filePath, 0, 0, BassFlags.Decode | BassFlags.Float);
-            if (decodeStream == 0) return;
+            
+            // If creation fails, BASS might be in a bad state (e.g. device lost). Try re-init.
+            if (decodeStream == 0)
+            {
+                Bass.Free();
+                Bass.Init(-1, 44100, DeviceInitFlags.Default, IntPtr.Zero);
+                decodeStream = Bass.CreateStream(filePath, 0, 0, BassFlags.Decode | BassFlags.Float);
+                if (decodeStream == 0) return;
+            }
 
             _stream = BassFx.TempoCreate(decodeStream, BassFlags.FxFreeSource | BassFlags.AutoFree);
             
@@ -120,7 +136,50 @@ namespace Exact432HzPlayerWindows.Services
                 // Set sync for end of stream
                 Bass.ChannelSetSync(_stream, SyncFlags.End | SyncFlags.Mixtime, 0, _endSync);
 
-                Bass.ChannelPlay(_stream);
+                if (!Bass.ChannelPlay(_stream))
+                {
+                    // Failed to play, maybe output device is invalid. Reinit and retry once.
+                    Bass.Free();
+                    Bass.Init(-1, 44100, DeviceInitFlags.Default, IntPtr.Zero);
+                    
+                    decodeStream = Bass.CreateStream(filePath, 0, 0, BassFlags.Decode | BassFlags.Float);
+                    if (decodeStream != 0)
+                    {
+                        _stream = BassFx.TempoCreate(decodeStream, BassFlags.FxFreeSource | BassFlags.AutoFree);
+                        if (_stream != 0)
+                        {
+                            Bass.ChannelSetAttribute(_stream, (ChannelAttribute)65537, semitones);
+                            Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume * _currentVolumeMultiplier);
+                            Bass.ChannelSetSync(_stream, SyncFlags.End | SyncFlags.Mixtime, 0, _endSync);
+                            Bass.ChannelPlay(_stream);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void EnsureDeviceHealth()
+        {
+            if (_stream == 0 || _lastFilePath == null) return;
+
+            // Check if stream unexpectedly stopped due to device removal
+            if (Bass.ChannelIsActive(_stream) == PlaybackState.Stopped)
+            {
+                long pos = Bass.ChannelGetPosition(_stream);
+                long len = Bass.ChannelGetLength(_stream);
+
+                double posSec = Bass.ChannelBytes2Seconds(_stream, pos);
+                double lenSec = Bass.ChannelBytes2Seconds(_stream, len);
+                
+                // If we are at the end, let the normal end sync handle it.
+                if (lenSec - posSec < 1.0) return; 
+
+                // Unexpected stop (device lost). Re-initialize and resume playback.
+                Bass.Free();
+                Bass.Init(-1, 44100, DeviceInitFlags.Default, IntPtr.Zero);
+                
+                Play(_lastFilePath, _lastMaxFreq, _lastVolumeMultiplier);
+                SetPositionSeconds(posSec);
             }
         }
 
@@ -141,7 +200,14 @@ namespace Exact432HzPlayerWindows.Services
 
         public void Resume()
         {
-            if (_stream != 0) Bass.ChannelPlay(_stream);
+            if (_stream != 0) 
+            {
+                if (!Bass.ChannelPlay(_stream))
+                {
+                    // If resume fails, try to reinit
+                    EnsureDeviceHealth();
+                }
+            }
         }
 
         public double GetPositionSeconds()
